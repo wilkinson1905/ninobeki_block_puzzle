@@ -67,8 +67,24 @@ class App:
         self.node_list = []
         self.status = Status.start_menu
         self.score = 0
+        self.during_binding = False
+        self.binding_count = 0
+        self.max_binding_count = 0
+        self.max_node_num = 0
+        self.spawn_range = [1,5]
+        self.next_node_multi = self.spawn_range[0]
         pyxel.init(App.WIDTH, App.HEIGHT, App.TITLE,App.FPS)
         pyxel.run(self.update, self.draw)
+    def restart(self):
+        self.node_list = []
+        self.status = Status.start_menu
+        self.score = 0
+        self.during_binding = False
+        self.binding_count = 0
+        self.max_binding_count = 0
+        self.max_node_num = 0
+        self.spawn_range = [1,5]
+        self.next_node_multi = self.spawn_range[0]
 
     def update(self):
         if self.status == Status.start_menu:
@@ -78,14 +94,18 @@ class App:
             self.playing_update()
         elif self.status == Status.game_over:
             if pyxel.btnp(pyxel.KEY_RETURN):
+                self.restart()
                 self.status = Status.start_menu
     
     def playing_update(self):
         # ノードスポーン
         collision_list = collision_detection(self.node_list)
-        if pyxel.frame_count % App.FPS == 0 and sum(collision_list) == len(collision_list):
+        if pyxel.frame_count % App.FPS == 0 and sum(collision_list) == len(collision_list)\
+                and self.during_binding == False:
+            self.binding_count = 0
             initial_x = 2*Node.RADIUS*2 + Node.RADIUS
-            self.node_list.append(Node(initial_x, Node.RADIUS, random.randint(1,5)))
+            self.node_list.append(Node(initial_x, Node.RADIUS, self.next_node_multi))
+            self.next_node_multi = random.randint(self.spawn_range[0] , self.spawn_range[1])
 
         # ボタン操作処理
         collision_list = collision_detection(self.node_list)
@@ -116,8 +136,17 @@ class App:
                         new_node = Node(other_node.x, other_node.y,other_node.multiplier+1)
                         self.node_list.remove(other_node)
                         self.node_list.append(new_node)
+                        self.during_binding = True
+                        self.binding_count += 1
+                        #スコア計算
+                        self.score += new_node.num * self.binding_count
+                        if new_node.multiplier > self.spawn_range[1] and \
+                            new_node.num > self.max_node_num:
+                            self.max_node_num = new_node.num
+                        if self.binding_count > self.max_binding_count:
+                            self.max_binding_count = self.binding_count
                         return
-
+        self.during_binding = False
         
         # ノード更新
         collision_list = collision_detection(self.node_list)
@@ -135,9 +164,17 @@ class App:
             self.draw_nodes()
         elif self.status == Status.game_over:
             self.draw_nodes()
-            pyxel.text(0,0,"Game Over",pyxel.COLOR_WHITE)
+            pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"GAME OVER",pyxel.COLOR_WHITE)
+        #スコア等表示
+        width_offset = App.WIDTH/2 + 3*3
+        height_offset = 2
         pyxel.rect(0,0,App.WIDTH,Node.RADIUS*2,pyxel.COLOR_DARK_BLUE)
-        pyxel.text(0,Node.RADIUS-3,"score:"+str(self.score),pyxel.COLOR_WHITE)
+
+        pyxel.text(0,height_offset,"score :"+str(self.score),pyxel.COLOR_WHITE)
+        pyxel.text(width_offset,height_offset,"chain:"+str(self.max_binding_count),pyxel.COLOR_WHITE)
+        pyxel.text(0,Node.RADIUS+height_offset,"maxnum:"+str(self.max_node_num),pyxel.COLOR_WHITE)
+        pyxel.text(width_offset,Node.RADIUS+height_offset,"next :"+str(Node.BASE**self.next_node_multi),\
+            pyxel.COLOR_WHITE)
 
     def draw_nodes(self):
         for node in self.node_list:
