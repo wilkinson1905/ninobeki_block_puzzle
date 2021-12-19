@@ -66,6 +66,7 @@ class App:
     def __init__(self):
         self.node_list = []
         self.status = Status.start_menu
+        self.score = 0
         pyxel.init(App.WIDTH, App.HEIGHT, App.TITLE,App.FPS)
         pyxel.run(self.update, self.draw)
 
@@ -83,8 +84,8 @@ class App:
         # ノードスポーン
         collision_list = collision_detection(self.node_list)
         if pyxel.frame_count % App.FPS == 0 and sum(collision_list) == len(collision_list):
-            initial_x = random.randint(0, App.WIDTH/(Node.RADIUS*2)-1)*Node.RADIUS*2 + Node.RADIUS
-            self.node_list.append(Node(initial_x, -Node.RADIUS, random.randint(1,5)))
+            initial_x = 2*Node.RADIUS*2 + Node.RADIUS
+            self.node_list.append(Node(initial_x, Node.RADIUS, random.randint(1,5)))
 
         # ボタン操作処理
         collision_list = collision_detection(self.node_list)
@@ -98,23 +99,24 @@ class App:
         
         # ノード結合
         collision_list = collision_detection(self.node_list)
-        for node, collision in zip(self.node_list[::-1], collision_list):
-            if collision == False:
-                continue
-            for other_node, other_collision in zip(self.node_list[::-1],collision_list):
-                if other_collision == False:
+        if len(collision_list) != 0 and collision_list[-1] == True:
+            for node, collision in zip(self.node_list[::-1], collision_list):
+                if collision == False:
                     continue
-                if node is other_node:
-                    continue
-                if (node.num == other_node.num) and \
-                    abs(node.x - other_node.x)**2 + \
-                    abs(node.y - other_node.y)**2 <= (Node.RADIUS*2)**2:
-                    self.draw()
-                    self.node_list.remove(node)
-                    new_node = Node(other_node.x, other_node.y,other_node.multiplier+1)
-                    self.node_list.remove(other_node)
-                    self.node_list.append(new_node)
-                    return
+                for other_node, other_collision in zip(self.node_list[::-1],collision_list):
+                    if other_collision == False:
+                        continue
+                    if node is other_node:
+                        continue
+                    if (node.num == other_node.num) and \
+                        abs(node.x - other_node.x)**2 + \
+                        abs(node.y - other_node.y)**2 <= (Node.RADIUS*2)**2:
+                        self.draw()
+                        self.node_list.remove(node)
+                        new_node = Node(other_node.x, other_node.y,other_node.multiplier+1)
+                        self.node_list.remove(other_node)
+                        self.node_list.append(new_node)
+                        return
 
         
         # ノード更新
@@ -128,12 +130,14 @@ class App:
     def draw(self):
         pyxel.cls(pyxel.COLOR_NAVY)
         if self.status == Status.start_menu:
-            pyxel.text(0,0,"Press Enter",pyxel.COLOR_WHITE)
+            pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"Press Enter",pyxel.COLOR_WHITE)
         elif self.status == Status.playing:
             self.draw_nodes()
         elif self.status == Status.game_over:
             self.draw_nodes()
             pyxel.text(0,0,"Game Over",pyxel.COLOR_WHITE)
+        pyxel.rect(0,0,App.WIDTH,Node.RADIUS*2,pyxel.COLOR_DARK_BLUE)
+        pyxel.text(0,Node.RADIUS-3,"score:"+str(self.score),pyxel.COLOR_WHITE)
 
     def draw_nodes(self):
         for node in self.node_list:
@@ -144,7 +148,7 @@ class App:
         for node in self.node_list:
             if lowest_y > node.y:
                 lowest_y = node.y
-        if lowest_y < 0:
+        if lowest_y < Node.RADIUS*2:
             return True
         else:
             return False
