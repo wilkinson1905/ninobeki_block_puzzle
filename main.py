@@ -6,6 +6,7 @@ class Status:
     start_menu = 0
     playing = 1
     game_over = 2
+    pause = 3
 
 def collision_detection(node_list):
     collision_list = []
@@ -66,6 +67,7 @@ class App:
     def __init__(self):
         self.restart()
         pyxel.init(App.WIDTH, App.HEIGHT, App.TITLE,App.FPS)
+        pyxel.fullscreen()
         pyxel.run(self.update, self.draw)
     def restart(self):
         self.node_list = []
@@ -80,14 +82,19 @@ class App:
 
     def update(self):
         if self.status == Status.start_menu:
-            if pyxel.btnp(pyxel.KEY_RETURN):
+            if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
                 self.status = Status.playing
         elif self.status == Status.playing:
+            if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
+                self.status = Status.pause
             self.playing_update()
         elif self.status == Status.game_over:
-            if pyxel.btnp(pyxel.KEY_RETURN):
+            if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
                 self.restart()
                 self.status = Status.start_menu
+        elif self.status == Status.pause:
+            if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
+                self.status = Status.playing
     
     def playing_update(self):
         # ノードスポーン
@@ -104,11 +111,11 @@ class App:
         # ボタン操作処理
         collision_list = collision_detection(self.node_list)
         if len(self.node_list) != 0 and collision_list[-1] == False:
-            if pyxel.btnp(pyxel.KEY_RIGHT):
+            if pyxel.btnp(pyxel.KEY_RIGHT) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT):
                 self.node_list[-1].move(1, self.node_list)
-            if pyxel.btnp(pyxel.KEY_LEFT):
+            if pyxel.btnp(pyxel.KEY_LEFT) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT):
                 self.node_list[-1].move(-1, self.node_list)
-            if pyxel.btnp(pyxel.KEY_DOWN):
+            if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN):
                 self.node_list[-1].speed_up()
         
         # ノード結合
@@ -154,21 +161,23 @@ class App:
     def draw(self):
         pyxel.cls(pyxel.COLOR_NAVY)
         if self.status == Status.start_menu:
-            pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"Press Enter",pyxel.COLOR_WHITE)
+            pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"PRESS START",pyxel.COLOR_WHITE)
         elif self.status == Status.playing:
             self.draw_nodes()
         elif self.status == Status.game_over:
             self.draw_nodes()
             pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"GAME OVER",pyxel.COLOR_WHITE)
+        elif self.status == Status.pause:
+            pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"  PAUSE  ",pyxel.COLOR_WHITE)
         #スコア等表示
         width_offset = App.WIDTH/2 + 3*3
         height_offset = 2
         pyxel.rect(0,0,App.WIDTH,Node.RADIUS*2,pyxel.COLOR_DARK_BLUE)
 
-        pyxel.text(0,height_offset,"score :"+str(self.score),pyxel.COLOR_WHITE)
-        pyxel.text(width_offset,height_offset,"chain:"+str(self.max_binding_count),pyxel.COLOR_WHITE)
-        pyxel.text(0,Node.RADIUS+height_offset,"maxnum:"+str(self.max_node_num),pyxel.COLOR_WHITE)
-        pyxel.text(width_offset,Node.RADIUS+height_offset,"next :"+str(Node.BASE**self.next_node_multi),\
+        pyxel.text(0,height_offset,"SCORE :"+str(self.score),pyxel.COLOR_WHITE)
+        pyxel.text(width_offset,height_offset,"CHAIN:"+str(self.max_binding_count),pyxel.COLOR_WHITE)
+        pyxel.text(0,Node.RADIUS+height_offset,"MAXNUM:"+str(self.max_node_num),pyxel.COLOR_WHITE)
+        pyxel.text(width_offset,Node.RADIUS+height_offset,"NEXT :"+str(Node.BASE**self.next_node_multi),\
             pyxel.COLOR_WHITE)
 
     def draw_nodes(self):
