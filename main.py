@@ -65,9 +65,11 @@ class App:
     TITLE = "ニノベキ2"
 
     def __init__(self):
-        self.restart()
         pyxel.init(App.WIDTH, App.HEIGHT, App.TITLE,App.FPS)
+        pyxel.load("music.pyxres")
+        self.restart()
         pyxel.fullscreen()
+        pyxel.playm(0,loop=True)
         pyxel.run(self.update, self.draw)
     def restart(self):
         self.node_list = []
@@ -79,6 +81,13 @@ class App:
         self.max_node_num = 0
         self.spawn_range = [1,3]
         self.next_node_multi = self.spawn_range[0]
+    
+    def play_op_sound(self):
+        pyxel.play(2, 5)
+    def play_binding_sound(self, binding_num):
+        sound_list =[ x if x < 3 else 2 for x in range(binding_num) ]
+        pyxel.play(3,sound_list)
+
 
     def update(self):
         if self.status == Status.start_menu:
@@ -86,14 +95,17 @@ class App:
                 self.status = Status.playing
         elif self.status == Status.playing:
             if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
+                pyxel.stop()
                 self.status = Status.pause
             self.playing_update()
         elif self.status == Status.game_over:
             if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
                 self.restart()
+                pyxel.playm(0,loop=True)
                 self.status = Status.start_menu
         elif self.status == Status.pause:
             if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
+                pyxel.playm(0,loop=True)
                 self.status = Status.playing
     
     def playing_update(self):
@@ -112,10 +124,13 @@ class App:
         collision_list = collision_detection(self.node_list)
         if len(self.node_list) != 0 and collision_list[-1] == False:
             if pyxel.btnp(pyxel.KEY_RIGHT) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT):
+                self.play_op_sound()
                 self.node_list[-1].move(1, self.node_list)
             if pyxel.btnp(pyxel.KEY_LEFT) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT):
+                self.play_op_sound()
                 self.node_list[-1].move(-1, self.node_list)
             if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN):
+                self.play_op_sound()
                 self.node_list[-1].speed_up()
         
         # ノード結合
@@ -141,6 +156,7 @@ class App:
                         self.binding_count += 1
                         #スコア計算
                         self.score += new_node.num * self.binding_count
+                        self.play_binding_sound(self.binding_count)
                         if new_node.multiplier > self.spawn_range[1] and \
                             new_node.num > self.max_node_num:
                             self.max_node_num = new_node.num
@@ -156,6 +172,7 @@ class App:
             if collision==False:
                 node.update()
         if self.game_over_decision():
+            pyxel.stop()
             self.status = Status.game_over
 
     def draw(self):
