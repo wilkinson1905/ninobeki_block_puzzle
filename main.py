@@ -44,7 +44,7 @@ class Node:
             if self is node:
                 continue
             if abs(node.x - new_x)**2 + abs(node.y - self.y)**2\
-                 <= (Node.RADIUS*2)**2:
+                 < (Node.RADIUS*2)**2:
                 return
         self.x = new_x
     def speed_up(self)->None:
@@ -64,15 +64,7 @@ class App:
     TITLE = "ニノベキ2"
 
     def __init__(self):
-        self.node_list = []
-        self.status = Status.start_menu
-        self.score = 0
-        self.during_binding = False
-        self.binding_count = 0
-        self.max_binding_count = 0
-        self.max_node_num = 0
-        self.spawn_range = [1,5]
-        self.next_node_multi = self.spawn_range[0]
+        self.restart()
         pyxel.init(App.WIDTH, App.HEIGHT, App.TITLE,App.FPS)
         pyxel.run(self.update, self.draw)
     def restart(self):
@@ -83,7 +75,7 @@ class App:
         self.binding_count = 0
         self.max_binding_count = 0
         self.max_node_num = 0
-        self.spawn_range = [1,5]
+        self.spawn_range = [1,3]
         self.next_node_multi = self.spawn_range[0]
 
     def update(self):
@@ -106,6 +98,8 @@ class App:
             initial_x = 2*Node.RADIUS*2 + Node.RADIUS
             self.node_list.append(Node(initial_x, Node.RADIUS, self.next_node_multi))
             self.next_node_multi = random.randint(self.spawn_range[0] , self.spawn_range[1])
+            sp_range = list(range(self.spawn_range[0],self.spawn_range[1]+1))
+            self.next_node_multi = random.choices(sp_range,weights=sp_range[::-1])[0]
 
         # ボタン操作処理
         collision_list = collision_detection(self.node_list)
@@ -143,6 +137,7 @@ class App:
                         if new_node.multiplier > self.spawn_range[1] and \
                             new_node.num > self.max_node_num:
                             self.max_node_num = new_node.num
+                            self.spawn_range[1] = new_node.multiplier-2
                         if self.binding_count > self.max_binding_count:
                             self.max_binding_count = self.binding_count
                         return
