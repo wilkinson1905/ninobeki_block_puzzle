@@ -62,7 +62,7 @@ class App:
     WIDTH = Node.RADIUS*2 * 5
     HEIGHT = Node.RADIUS*2 * 8
     FPS = 20
-    TITLE = "ニノベキ2"
+    TITLE = "ニノベキブロックパズル"
 
     def __init__(self):
         pyxel.init(App.WIDTH, App.HEIGHT, App.TITLE,App.FPS)
