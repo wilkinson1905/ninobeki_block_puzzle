@@ -34,7 +34,7 @@ class Node:
         self.multiplier = multiplier
         self.num = Node.BASE ** multiplier
         self.digits = math.floor(math.log10(self.num)+1)
-        self.color = Node.COLOR_LIST[self.multiplier]
+        self.color = Node.COLOR_LIST[self.multiplier%len(Node.COLOR_LIST)]
     def move(self, x:int, node_list)->None:
         new_x = self.x + x*Node.RADIUS*2
         if new_x < Node.RADIUS:
@@ -56,6 +56,8 @@ class Node:
     def draw(self):
         pyxel.circ(self.x,self.y, Node.RADIUS-1, self.color)
         offset_x = int(float(self.digits)/2.0 * 3)
+        if self.digits >= 3:
+            offset_x += 1
         pyxel.text(self.x-offset_x,self.y-2, str(self.num), pyxel.COLOR_WHITE)
 
 class App:
