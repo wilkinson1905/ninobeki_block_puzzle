@@ -21,3 +21,6 @@ Enter: ゲーム開始
 左右矢印: ブロック左右移動  
 下矢印: ブロック高速落下
  
+ ## 使用BGM
+フリーBGM・音楽素材MusMus様 https://musmus.main.jp
+ぴこぴこ天国

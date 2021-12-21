@@ -81,18 +81,22 @@ class App:
         self.max_node_num = 0
         self.spawn_range = [1,3]
         self.next_node_multi = self.spawn_range[0]
-    
+    def finish(self):
+        # subprocess.run(["poweroff"])  
+        pyxel.quit()
     def play_op_sound(self):
-        pyxel.play(2, 5)
+        pyxel.play(3, 11)
     def play_binding_sound(self, binding_num):
-        sound_list =[ x if x < 3 else 2 for x in range(binding_num) ]
+        sound_list = [x + 3 for x in range(binding_num)]
+        sound_list = [x if x <=10 else 10 for x in sound_list ]
         pyxel.play(3,sound_list)
-
 
     def update(self):
         if self.status == Status.start_menu:
             if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
                 self.status = Status.playing
+            if pyxel.btnp(pyxel.GAMEPAD1_BUTTON_GUIDE):
+                self.finish()
         elif self.status == Status.playing:
             if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
                 pyxel.stop()
@@ -107,6 +111,8 @@ class App:
             if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_START):
                 pyxel.playm(0,loop=True)
                 self.status = Status.playing
+            if pyxel.btnp(pyxel.GAMEPAD1_BUTTON_GUIDE):
+                self.finish()
     
     def playing_update(self):
         # ノードスポーン
@@ -179,6 +185,7 @@ class App:
         pyxel.cls(pyxel.COLOR_NAVY)
         if self.status == Status.start_menu:
             pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"PRESS START",pyxel.COLOR_WHITE)
+            pyxel.text(App.WIDTH-4*18,App.HEIGHT-10,"PS BUTTON for EXIT",pyxel.COLOR_WHITE)
         elif self.status == Status.playing:
             self.draw_nodes()
         elif self.status == Status.game_over:
@@ -186,6 +193,8 @@ class App:
             pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"GAME OVER",pyxel.COLOR_WHITE)
         elif self.status == Status.pause:
             pyxel.text(App.WIDTH/2-20,App.HEIGHT/2,"  PAUSE  ",pyxel.COLOR_WHITE)
+            pyxel.text(App.WIDTH-4*18,App.HEIGHT-10,"PS BUTTON for EXIT",pyxel.COLOR_WHITE)
+
         #スコア等表示
         width_offset = App.WIDTH/2 + 3*3
         height_offset = 2
