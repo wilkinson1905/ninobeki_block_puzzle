@@ -55,10 +55,14 @@ class Node:
             self.y += Node.RADIUS
     def draw(self):
         pyxel.circ(self.x,self.y, Node.RADIUS-1, self.color)
-        offset_x = int(float(self.digits)/2.0 * 3)
-        if self.digits >= 3:
+        if self.digits >= 5:
+            label = str(self.num//1024)+"K"
+        else:
+            label = str(self.num)
+        offset_x = int(len(label)/2.0 * 3)
+        if len(label) >= 3:
             offset_x += 1
-        pyxel.text(self.x-offset_x,self.y-2, str(self.num), pyxel.COLOR_WHITE)
+        pyxel.text(self.x-offset_x,self.y-2, label, pyxel.COLOR_WHITE)
 
 class App:
     WIDTH = Node.RADIUS*2 * 5
@@ -127,6 +131,7 @@ class App:
             self.next_node_multi = random.randint(self.spawn_range[0] , self.spawn_range[1])
             sp_range = list(range(self.spawn_range[0],self.spawn_range[1]+1))
             self.next_node_multi = random.choices(sp_range,weights=sp_range[::-1])[0]
+            # self.next_node_multi = len(self.node_list)
 
         # ボタン操作処理
         collision_list = collision_detection(self.node_list)
@@ -205,7 +210,12 @@ class App:
         pyxel.text(0,height_offset,"SCORE :"+str(self.score),pyxel.COLOR_WHITE)
         pyxel.text(width_offset,height_offset,"CHAIN:"+str(self.max_binding_count),pyxel.COLOR_WHITE)
         pyxel.text(0,Node.RADIUS+height_offset,"MAXNUM:"+str(self.max_node_num),pyxel.COLOR_WHITE)
-        pyxel.text(width_offset,Node.RADIUS+height_offset,"NEXT :"+str(Node.BASE**self.next_node_multi),\
+        next_num = Node.BASE**self.next_node_multi
+        if len(str(next_num)) >= 5:
+            label = str(next_num //1024)+"K"
+        else:
+            label = str(next_num)
+        pyxel.text(width_offset,Node.RADIUS+height_offset,"NEXT :"+label,\
             pyxel.COLOR_WHITE)
 
     def draw_nodes(self):
