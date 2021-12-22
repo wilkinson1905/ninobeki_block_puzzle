@@ -87,7 +87,7 @@ class App:
         # subprocess.run(["poweroff"])  
         pyxel.quit()
     def play_op_sound(self):
-        pyxel.play(3, 11)
+        pyxel.play(2, 11)
     def play_binding_sound(self, binding_num):
         sound_list = [x + 3 for x in range(binding_num)]
         sound_list = [x if x <=10 else 10 for x in sound_list ]
